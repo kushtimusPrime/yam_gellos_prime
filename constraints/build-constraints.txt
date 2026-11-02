@@ -1,0 +1,3 @@
+# ruckig==0.15.3 (pinned by third_party/i2rt) has no prebuilt wheel and fails to
+# build with scikit-build-core>=0.10 ("Use build.targets instead of cmake.targets").
+scikit-build-core<0.10

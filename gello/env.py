@@ -1,0 +1,93 @@
+import time
+from typing import Any, Dict, Optional
+
+import numpy as np
+
+from gello.agents.agent import Action, action_pos
+from gello.cameras.camera import CameraDriver
+from gello.robots.robot import Robot
+
+
+class Rate:
+    def __init__(self, rate: float):
+        self.last = time.time()
+        self.rate = rate
+    def sleep(self) -> None:
+        while self.last + 1.0 / self.rate > time.time():
+            time.sleep(0.0001)
+        self.last = time.time()
+class RobotEnv:
+    def __init__(
+        self,
+        robot: Robot,
+        control_rate_hz: float = 100.0,
+        camera_dict: Optional[Dict[str, CameraDriver]] = None,
+    ) -> None:
+        self._robot = robot
+        self._cycle_time = 1.0 / control_rate_hz
+        self._rate = Rate(control_rate_hz)
+        self._camera_dict = {} if camera_dict is None else camera_dict
+    def robot(self) -> Robot:
+        """Get the robot object.
+        Returns:
+            robot: the robot object.
+        """
+        return self._robot
+    def __len__(self):
+        return 0
+
+    def _command_action(self, action: Action) -> None:
+        joints = action_pos(action)
+        num_dofs = self._robot.num_dofs()
+        assert len(joints) == num_dofs, f"input:{len(joints)}, robot:{num_dofs}"
+        assert np.all(np.isfinite(joints)), "action pos must be finite"
+
+        robot_action: Action = {"pos": joints}
+        if "vel" in action and action["vel"] is not None:
+            vel = action["vel"]
+            assert len(vel) == num_dofs, f"input vel:{len(vel)}, robot:{num_dofs}"
+            assert np.all(np.isfinite(vel)), "action vel must be finite"
+            robot_action["vel"] = vel
+
+        self._robot.command_joint_state(robot_action)
+
+    def begin_step(self, action: Action) -> float:
+        """Command an action immediately and return the step start time."""
+        step_start = time.perf_counter()
+        self._command_action(action)
+        return step_start
+
+    def finish_step(self, _step_start: float) -> Dict[str, Any]:
+        """Return observations after a command.
+
+        This preserves the existing no-sleep teleop behavior; timing is still
+        driven by the serial, CAN, and recording work in the control loop.
+        """
+        return self.get_obs()
+
+    def step(self, action: Action) -> Dict[str, Any]:
+        """Step the environment forward."""
+        return self.finish_step(self.begin_step(action))
+    def get_obs(self) -> Dict[str, Any]:
+        """Get observation from the environment.
+        Returns:
+            obs: observation from the environment.
+        """
+        observations = {}
+        for name, camera in self._camera_dict.items():
+            image, depth = camera.read()
+            observations[f"{name}_rgb"] = image
+            observations[f"{name}_depth"] = depth
+        robot_obs = self._robot.get_observations()
+        assert "joint_positions" in robot_obs
+        assert "joint_velocities" in robot_obs
+        assert "ee_pos_quat" in robot_obs
+        observations["joint_positions"] = robot_obs["joint_positions"]
+        observations["joint_velocities"] = robot_obs["joint_velocities"]
+        observations["ee_pos_quat"] = robot_obs["ee_pos_quat"]
+        observations["gripper_position"] = robot_obs["gripper_position"]
+        return observations
+def main() -> None:
+    pass
+if __name__ == "__main__":
+    main()

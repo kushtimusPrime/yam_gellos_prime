@@ -1,0 +1,9 @@
+# keep in alphabetical order
+# (trimmed from upstream gello_software to what the YAM + Dynamixel code imports)
+dm_control
+omegaconf==2.3.0
+pyyaml
+pyzmq
+termcolor
+tyro
+zmq

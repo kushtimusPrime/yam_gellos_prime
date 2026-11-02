@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.egg-info/
+# written to the working directory by gello/robots/sim_robot.py
+arena.xml
+MUJOCO_LOG.TXT
+# Per-GELLO calibration output from scripts/generate_yam_config.py (contains your U2D2 serial)
+configs/yam_auto_generated*.yaml
+# Teleop recordings (launch_yaml.py --use-save-interface)
+data/
