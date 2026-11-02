@@ -1,4 +1,4 @@
-# YAM GELLO
+# yam_gellos_prime — YAM GELLO
 
 Teleoperate one or two [I2RT YAM](https://i2rt.com/) arms with
 [GELLO](https://wuphilipp.github.io/gello_site/) leader arms, in MuJoCo sim or on the real robot.
@@ -34,7 +34,7 @@ GELLO mechanical build (STLs, BOM): <https://github.com/wuphilipp/gello_mechanic
 ## Install
 
 ```bash
-git clone --recurse-submodules <this-repo-url> yam_gello && cd yam_gello && bash setup.sh
+git clone --recurse-submodules https://github.com/kushtimusPrime/yam_gellos_prime.git && cd yam_gellos_prime && bash setup.sh
 ```
 
 `setup.sh` installs [uv](https://docs.astral.sh/uv/) if needed and creates `.venv/` (Python 3.12) with:
@@ -44,7 +44,7 @@ source, which takes a few minutes.
 
 In every new terminal:
 ```bash
-cd yam_gello && source .venv/bin/activate
+cd yam_gellos_prime && source .venv/bin/activate
 ```
 
 <details><summary>Manual install (what setup.sh does)</summary>
